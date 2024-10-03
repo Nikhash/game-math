@@ -671,7 +671,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.08
+  m_Radius: 0.18
   m_Center: {x: 0, y: -0.12, z: 0}
 --- !u!1001 &6208831963816882321
 PrefabInstance:
@@ -695,7 +695,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1064534356098386809, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_Value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1064534356098386809, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_WholeNumbers
@@ -769,6 +769,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3938172280707036622, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
+      propertyPath: concreteGrab
+      value: 
+      objectReference: {fileID: 8658184023395725012}
     - target: {fileID: 5002593541015198102, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -850,6 +854,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6101301330056472460, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
+      propertyPath: m_Value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6101301330056472460, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -881,6 +889,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI
       objectReference: {fileID: 0}
+    - target: {fileID: 8690616484941123924, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
+      propertyPath: concreteGrab
+      value: 
+      objectReference: {fileID: 8658184023395725012}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -992,6 +1004,7 @@ GameObject:
   - component: {fileID: 8658184023394724880}
   - component: {fileID: 8658184023395725010}
   - component: {fileID: 8658184023395725011}
+  - component: {fileID: 8658184023395725012}
   m_Layer: 0
   m_Name: Hook
   m_TagString: Untagged
@@ -1286,11 +1299,11 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.38724518, y: 0.27928543, z: 0.3123706}
+  m_Size: {x: 0.57, y: 0.62, z: 0.28}
   m_Center: {x: -0.05219078, y: -2.78788, z: 0.008110523}
 --- !u!54 &8658184023395725011
 Rigidbody:
@@ -1319,6 +1332,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &8658184023395725012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8658184023392465618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4359fe46a16c5f546b055b5d82de17a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  concreteAttached: 0
 --- !u!33 &8658184023395725016
 MeshFilter:
   m_ObjectHideFlags: 0
