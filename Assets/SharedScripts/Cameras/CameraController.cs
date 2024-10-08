@@ -1,5 +1,6 @@
 ﻿using System;
 using Cinemachine;
+using GameMath.UI;
 using TMPro;
 using UnityEngine;
 
@@ -14,6 +15,8 @@ namespace GameMath.Cameras
         
         [Header("UI")]
         [SerializeField] private TMP_Dropdown cameraViewDropdown;
+
+        public HoldableButton holdableButton;
         
         private void Awake()
         {
@@ -33,18 +36,21 @@ namespace GameMath.Cameras
                     isometricCamera.Priority = 11;
                     topdownCamera.Priority   = 10;
                     sidewaysCamera.Priority  = 10;
+                    holdableButton.activeCamera = holdableButton.camera1;
                     break;
             
                 case 1:
                     isometricCamera.Priority = 10;
                     topdownCamera.Priority   = 11;
                     sidewaysCamera.Priority  = 10;
+                    holdableButton.activeCamera = holdableButton.camera2;
                     break;
             
                 case 2:
                     isometricCamera.Priority = 10;
                     topdownCamera.Priority   = 10;
                     sidewaysCamera.Priority  = 11;
+                    holdableButton.activeCamera = holdableButton.camera3;
                     break;
                 
                 default:

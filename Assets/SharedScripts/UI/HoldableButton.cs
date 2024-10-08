@@ -1,3 +1,5 @@
+using System.Collections;
+using GameMath.Cameras;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -8,14 +10,18 @@ namespace GameMath.UI
         public ConcreteGrab concreteGrab;
 
         // Game objects
+        public CameraController cameraController;
         private GameObject crane;
         private GameObject trolley;
         private GameObject cable;
         private GameObject hook;
-        private GameObject concrete;
+        public GameObject concrete;
         private GameObject trolleyFar;
         private GameObject trolleyNear;
-        private Camera camera;
+        public GameObject camera1;
+        public GameObject camera2;
+        public GameObject camera3;
+        public GameObject activeCamera;
 
         // UI objects
         private GameObject buttonLeft;
@@ -34,13 +40,16 @@ namespace GameMath.UI
         public float trolleySliderLocation;
         public float cableSliderLocation;
         public Vector3 trolleyPositionTarget;
-        private float clickDetectionRange = 44;
+        private float angle;
+        private float angleCounter;
 
         private bool isPointerDown;
         public bool IsHeldDown => isPointerDown;
         private bool mouseDown;
+        private bool facingTarget;
+        private bool rotating;
 
-        public void Start()
+        public void Awake()
         {
             crane = GameObject.Find("Tower Crane");
             trolley = GameObject.Find("Trolley");
@@ -55,12 +64,21 @@ namespace GameMath.UI
             trolleyFar = GameObject.Find("Trolley Far Limit");
             trolleyNear = GameObject.Find("Trolley Near Limit");
 
+            camera1 = GameObject.Find("Main Camera");
+            camera2 = GameObject.Find("Top-down Camera");
+            camera3 = GameObject.Find("Side-way Camera");
+
+            activeCamera = camera1;
+        }
+
+        public void Start()
+        {
+
             trolleyNearOffset = crane.transform.position - trolleyNear.transform.position;
             trolleyFarOffset = crane.transform.position - trolleyFar.transform.position;
             cableOffset = trolley.transform.position - cable.transform.position;
             hookOffset = hook.transform.position - trolley.transform.position;
             cableLowLimit = 12;
-            camera = GameObject.Find("Main Camera").GetComponent<Camera>();
         }
 
         public void Update()
@@ -82,20 +100,9 @@ namespace GameMath.UI
             Vector3 trolleyFarPosition = crane.transform.TransformPoint(-trolleyFarOffset);
             trolleyFar.transform.SetPositionAndRotation(new(trolleyFarPosition.x, trolleyFar.transform.position.y, trolleyFarPosition.z), trolleyFar.transform.rotation);
 
-            if (Input.GetMouseButtonDown(0) && !mouseDown)
+            if (Input.GetMouseButtonDown(0))
             {
                 mouseDown = true;
-                Vector3 screenPoint = Input.mousePosition;
-                Ray ray = camera.ScreenPointToRay(screenPoint);
-
-                float distanceToObject = Vector3.Distance(ray.origin, concrete.transform.position);
-
-                //print("distance:" + distanceToObject + "ray:" + ray.origin + "concrete:" + concrete.transform.position);
-
-                if (distanceToObject < clickDetectionRange)
-                {
-                    print("Concrete detected");
-                }
             }
 
             if (Input.GetMouseButtonUp(0) && mouseDown)
@@ -105,7 +112,7 @@ namespace GameMath.UI
 
             if (concreteGrab.concreteAttached)
             {
-                concrete.transform.SetLocalPositionAndRotation(new(hook.transform.localPosition.x, hook.transform.localPosition.y-2.5f, hook.transform.localPosition.z), hook.transform.localRotation);
+                concrete.transform.SetLocalPositionAndRotation(new(hook.transform.localPosition.x, hook.transform.localPosition.y - 2.5f, hook.transform.localPosition.z), hook.transform.localRotation);
             }
 
             if (isPointerDown)
@@ -140,6 +147,47 @@ namespace GameMath.UI
         public void CableSliderLocation()
         {
             cableSliderLocation = cableSlider.GetComponent<UnityEngine.UI.Slider>().value;
+        }
+
+        public void GrabConcrete()
+        {
+            if (!rotating)
+            {
+                angle = Vector3.SignedAngle(hook.transform.position, concrete.transform.position, crane.transform.position);
+                angleCounter = angle;
+                facingTarget = false;
+                StartCoroutine(Movement());
+                //print("Grabbing concrete (Not functioinal)");
+            }
+        }
+
+        public IEnumerator Movement()
+        {
+            print(angleCounter);
+
+            if (angleCounter < 0.5f && angleCounter > -0.5f)
+            {
+                facingTarget = true;
+                angle = 0;
+                rotating = false;
+                angleCounter = 0;
+            }
+            else
+            {
+                yield return new WaitForSecondsRealtime(0.02f);
+                StartCoroutine(Movement());
+            }
+            if (angle > 0)
+            {
+                crane.transform.Rotate(0, 1, 0);
+                angleCounter -= 1;
+            }
+            else
+            {
+                crane.transform.Rotate(0, -1, 0);
+                angleCounter += 1;
+            }
+            yield return new WaitForSecondsRealtime(0.02f);
         }
     }
 }
