@@ -48,6 +48,8 @@ namespace GameMath.UI
         private bool mouseDown;
         private bool facingTarget;
         private bool rotating;
+        private bool trolleyMoving;
+        private bool cableMoving;
 
         public void Awake()
         {
@@ -151,43 +153,75 @@ namespace GameMath.UI
 
         public void GrabConcrete()
         {
-            if (!rotating)
+            if (!rotating && !trolleyMoving && !cableMoving)
             {
-                angle = Vector3.SignedAngle(hook.transform.position, concrete.transform.position, crane.transform.position);
+                angle = Vector3.SignedAngle(new(hook.transform.position.x, 0, hook.transform.position.z), new(concrete.transform.position.x, 0, concrete.transform.position.z), Vector3.up);
                 angleCounter = angle;
                 facingTarget = false;
-                StartCoroutine(Movement());
+                rotating = true;
+                trolleyMoving = true;
+                cableMoving = true;
+                StartCoroutine(SpinCrane());
                 //print("Grabbing concrete (Not functioinal)");
             }
         }
 
-        public IEnumerator Movement()
+        public IEnumerator SpinCrane()
         {
-            print(angleCounter);
-
-            if (angleCounter < 0.5f && angleCounter > -0.5f)
+            if (angleCounter < 0.25f && angleCounter > -0.25f)
             {
                 facingTarget = true;
                 angle = 0;
                 rotating = false;
                 angleCounter = 0;
             }
+
             else
             {
-                yield return new WaitForSecondsRealtime(0.02f);
-                StartCoroutine(Movement());
+                if (angle > 0)
+                {
+                    crane.transform.Rotate(new(0, 1, 0), 0.1f);
+                    angleCounter -= 0.1f;
+                }
+                else
+                {
+                    crane.transform.Rotate(new(0, -1, 0), 0.1f);
+                    angleCounter += 0.1f;
+                }
+
+                yield return new WaitForSecondsRealtime(0.005f);
+                StartCoroutine(SpinCrane());
             }
-            if (angle > 0)
+        }
+
+        
+        public IEnumerator MoveTrolley()
+        {
+            // Change these values
+            if (angleCounter < 0.25f && angleCounter > -0.25f)
             {
-                crane.transform.Rotate(0, 1, 0);
-                angleCounter -= 1;
+                facingTarget = true;
+                angle = 0;
+                rotating = false;
+                angleCounter = 0;
             }
+
             else
             {
-                crane.transform.Rotate(0, -1, 0);
-                angleCounter += 1;
+                if (angle > 0)
+                {
+                    crane.transform.Rotate(new(0, 1, 0), 0.1f);
+                    angleCounter -= 0.1f;
+                }
+                else
+                {
+                    crane.transform.Rotate(new(0, -1, 0), 0.1f);
+                    angleCounter += 0.1f;
+                }
+
+                yield return new WaitForSecondsRealtime(0.005f);
+                StartCoroutine(SpinCrane());
             }
-            yield return new WaitForSecondsRealtime(0.02f);
         }
     }
 }
