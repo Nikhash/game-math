@@ -41,7 +41,10 @@ namespace GameMath.UI
         public float cableSliderLocation;
         public Vector3 trolleyPositionTarget;
         private float angle;
-        private float angleCounter;
+        private float distanceConcrete;
+        private float distanceTrolley;
+        private float distanceTrolleyToConcrete;
+        public float trolleyCurrentPosition;
 
         private bool isPointerDown;
         public bool IsHeldDown => isPointerDown;
@@ -87,8 +90,11 @@ namespace GameMath.UI
         {
             cable.transform.localScale = new(1, 0 + 2 * cableSliderLocation);
 
-            // Attach trolley to crane
-            trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleySliderLocation), crane.transform.rotation);
+            if (!rotating)
+            {
+                // Attach trolley to crane
+                trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleySliderLocation), crane.transform.rotation);
+            }
 
             // Attach cable to trolley
             cable.transform.SetPositionAndRotation(new(trolley.transform.position.x, cable.transform.position.y, trolley.transform.position.z), trolley.transform.rotation);
@@ -101,6 +107,12 @@ namespace GameMath.UI
             trolleyNear.transform.SetPositionAndRotation(new(trolleyNearPosition.x, trolleyNear.transform.position.y, trolleyNearPosition.z), trolleyNear.transform.rotation);
             Vector3 trolleyFarPosition = crane.transform.TransformPoint(-trolleyFarOffset);
             trolleyFar.transform.SetPositionAndRotation(new(trolleyFarPosition.x, trolleyFar.transform.position.y, trolleyFarPosition.z), trolleyFar.transform.rotation);
+            
+            // Update distance from crane to trolley and concrete
+            distanceConcrete = Vector3.Distance(crane.transform.position, concrete.transform.position);
+            distanceTrolley = Vector3.Distance(crane.transform.position, trolley.transform.position);
+            
+            trolleyCurrentPosition = Vector3.Distance(trolleyNear.transform.position, trolley.transform.position) / Vector3.Distance(trolleyNear.transform.position, trolleyFar.transform.position);
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -156,17 +168,32 @@ namespace GameMath.UI
             if (!rotating && !trolleyMoving && !cableMoving)
             {
                 angle = Vector3.SignedAngle(new(hook.transform.position.x, 0, hook.transform.position.z), new(concrete.transform.position.x, 0, concrete.transform.position.z), Vector3.up);
-                angleCounter = angle;
+                float angleCounter = angle;
                 facingTarget = false;
                 rotating = true;
                 trolleyMoving = true;
                 cableMoving = true;
-                StartCoroutine(SpinCrane());
-                //print("Grabbing concrete (Not functioinal)");
+                StartCoroutine(SpinCrane(angleCounter));
+
+                distanceTrolleyToConcrete = distanceTrolley / distanceConcrete;
+                //float distance = Vector3.Distance(trolley.transform.position, concrete.transform.position);
+                float trolleyTargetPosition = Vector3.Distance(trolleyNear.transform.position, concrete.transform.position) / Vector3.Distance(trolleyNear.transform.position, trolleyFar.transform.position);
+                float trolleyDistanceToConcrete = trolleyCurrentPosition / trolleyTargetPosition;
+
+                if (trolleyTargetPosition < trolleyCurrentPosition)
+                {
+                    trolleyDistanceToConcrete *= -1;
+                }
+                
+                float movementIndex = trolleyDistanceToConcrete/25;
+
+                StartCoroutine(MoveTrolley( trolleyDistanceToConcrete, movementIndex));
+
+                print("Grabbing concrete");
             }
         }
 
-        public IEnumerator SpinCrane()
+        public IEnumerator SpinCrane(float angleCounter)
         {
             if (angleCounter < 0.25f && angleCounter > -0.25f)
             {
@@ -174,6 +201,9 @@ namespace GameMath.UI
                 angle = 0;
                 rotating = false;
                 angleCounter = 0;
+
+                print("Stopping crane rotation");
+                StopCoroutine(nameof(SpinCrane));
             }
 
             else
@@ -190,37 +220,25 @@ namespace GameMath.UI
                 }
 
                 yield return new WaitForSecondsRealtime(0.005f);
-                StartCoroutine(SpinCrane());
+                StartCoroutine(SpinCrane(angleCounter));
             }
         }
 
-        
-        public IEnumerator MoveTrolley()
+        public IEnumerator MoveTrolley(float trolleyPos, float movementIndex)
         {
             // Change these values
-            if (angleCounter < 0.25f && angleCounter > -0.25f)
+            if (trolleyPos == 1)
             {
-                facingTarget = true;
-                angle = 0;
-                rotating = false;
-                angleCounter = 0;
+                print("Stopping trolley movement");
+                StopCoroutine(nameof(MoveTrolley));
             }
 
             else
             {
-                if (angle > 0)
-                {
-                    crane.transform.Rotate(new(0, 1, 0), 0.1f);
-                    angleCounter -= 0.1f;
-                }
-                else
-                {
-                    crane.transform.Rotate(new(0, -1, 0), 0.1f);
-                    angleCounter += 0.1f;
-                }
-
-                yield return new WaitForSecondsRealtime(0.005f);
-                StartCoroutine(SpinCrane());
+                trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleyPos), crane.transform.rotation);
+                trolleyPos += movementIndex;
+                yield return new WaitForSecondsRealtime(0.08f);
+                StartCoroutine(MoveTrolley(trolleyPos, movementIndex));
             }
         }
     }
