@@ -45,14 +45,24 @@ namespace GameMath.UI
         private float distanceTrolley;
         private float distanceTrolleyToConcrete;
         public float trolleyCurrentPosition;
+        private float trolleyDistanceToConcrete;
+        private float trolleyTargetPosition;
+        private float trolleyMaxDistance;
+        private float trolleyDistanceFromNear;
+        private float concreteDistanceFromNear;
+        private float startTrolleyLerpPosition;
+        private float concreteLerpPosition;
+        private float currentTrolleyLerpPosition;
+        private float trolleyMovingDistanceToConcrete;
+        private float currentTrolleyDistanceToConcrete;
 
         private bool isPointerDown;
         public bool IsHeldDown => isPointerDown;
         private bool mouseDown;
-        private bool facingTarget;
-        private bool rotating;
-        private bool trolleyMoving;
-        private bool cableMoving;
+        public bool facingTarget;
+        public bool rotating;
+        public bool trolleyMoving;
+        public bool cableMoving;
 
         public void Awake()
         {
@@ -93,8 +103,16 @@ namespace GameMath.UI
             if (!rotating)
             {
                 // Attach trolley to crane
-                trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleySliderLocation), crane.transform.rotation);
+                //trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleySliderLocation), crane.transform.rotation);
             }
+
+            // Get trolley's current lerp position
+            currentTrolleyLerpPosition = trolleyDistanceFromNear / trolleyMaxDistance;
+            
+            // Update trolley's distance from concrete
+            currentTrolleyDistanceToConcrete = currentTrolleyLerpPosition - concreteLerpPosition;
+            
+            trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleyDistanceToConcrete), crane.transform.rotation);
 
             // Attach cable to trolley
             cable.transform.SetPositionAndRotation(new(trolley.transform.position.x, cable.transform.position.y, trolley.transform.position.z), trolley.transform.rotation);
@@ -172,13 +190,49 @@ namespace GameMath.UI
                 facingTarget = false;
                 rotating = true;
                 trolleyMoving = true;
-                cableMoving = true;
+                //cableMoving = true;
                 StartCoroutine(SpinCrane(angleCounter));
 
                 distanceTrolleyToConcrete = distanceTrolley / distanceConcrete;
                 //float distance = Vector3.Distance(trolley.transform.position, concrete.transform.position);
-                float trolleyTargetPosition = Vector3.Distance(trolleyNear.transform.position, concrete.transform.position) / Vector3.Distance(trolleyNear.transform.position, trolleyFar.transform.position);
-                float trolleyDistanceToConcrete = trolleyCurrentPosition / trolleyTargetPosition;
+
+
+
+                // Current WIP
+
+                // Idea: Get the positions on the lerp scale, get the distance between trolley and concrete, and move trolley towards concrete until their coordinates match.
+                // Example: Trolley at lerp 0.24, concrete at lerp 0.64. Trolley gets set to move towards concrete by the distance (0.4) divided by 25, the current movement index at intervals of 0.08 seconds.
+
+                // Get the trolley's target position, at the x/z coordinates of concrete (Not sure if working right atm)
+                trolleyTargetPosition = Vector3.Distance(trolleyNear.transform.position, concrete.transform.position) / Vector3.Distance(trolleyNear.transform.position, trolleyFar.transform.position);
+
+                // Get trolley's distance to the concrete at the start of the procedure
+                float trolleyDistanceToConcreteStart = trolleyCurrentPosition / trolleyTargetPosition;
+
+                // Get trolley's distance to the concrete
+                trolleyDistanceToConcrete = trolleyDistanceToConcreteStart;
+
+                // Get trolley's max distance on the lerp scale (0-1, being 1 in this case)
+                trolleyMaxDistance = Vector3.Distance(trolleyNear.transform.position, trolleyFar.transform.position);
+
+                // Get trolley's distance from lerp scale's 0 point
+                trolleyDistanceFromNear = Vector3.Distance(trolleyNear.transform.position, trolley.transform.position);
+                
+                // Get concrete's distance from lerp scale's 0 point
+                concreteDistanceFromNear = Vector3.Distance(trolleyNear.transform.position, concrete.transform.position);
+
+                // Get trolley's lerp position at the start of the operation
+                startTrolleyLerpPosition = trolleyDistanceFromNear / trolleyMaxDistance;
+
+                // Get trolley's lerp position at the start of the operation
+                concreteLerpPosition = concreteDistanceFromNear / trolleyMaxDistance;
+
+                // Get the distance the trolley has to move for this operation
+                trolleyMovingDistanceToConcrete = startTrolleyLerpPosition - concreteLerpPosition;
+                
+
+
+
 
                 if (trolleyTargetPosition < trolleyCurrentPosition)
                 {
@@ -187,7 +241,7 @@ namespace GameMath.UI
                 
                 float movementIndex = trolleyDistanceToConcrete/25;
 
-                StartCoroutine(MoveTrolley( trolleyDistanceToConcrete, movementIndex));
+                StartCoroutine(MoveTrolley(movementIndex));
 
                 print("Grabbing concrete");
             }
@@ -224,22 +278,29 @@ namespace GameMath.UI
             }
         }
 
-        public IEnumerator MoveTrolley(float trolleyPos, float movementIndex)
+        public IEnumerator MoveTrolley(float movementIndex)
         {
             // Change these values
-            if (trolleyPos == 1)
+            if (trolleyDistanceToConcrete < 1.01f && trolleyDistanceToConcrete > 0.99f)
             {
                 print("Stopping trolley movement");
                 StopCoroutine(nameof(MoveTrolley));
+                cableMoving = false;
+                trolleyMoving = false;
             }
 
             else
             {
-                trolley.transform.SetPositionAndRotation(Vector3.Lerp(trolleyFar.transform.position, trolleyNear.transform.position, trolleyPos), crane.transform.rotation);
-                trolleyPos += movementIndex;
                 yield return new WaitForSecondsRealtime(0.08f);
-                StartCoroutine(MoveTrolley(trolleyPos, movementIndex));
+                TrolleyMovement(movementIndex);
             }
+        }
+
+        private void TrolleyMovement(float movementIndex)
+        {
+            trolleyDistanceToConcrete += movementIndex;
+            print($"trolleyDistanceToConcrete: {trolleyDistanceToConcrete}, trolleyCurrentPosition: {trolleyCurrentPosition}, trolleyTargetPosition: {trolleyTargetPosition}");
+            StartCoroutine(MoveTrolley(movementIndex));
         }
     }
 }
