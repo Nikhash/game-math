@@ -785,7 +785,7 @@ Transform:
   m_GameObject: {fileID: 6023892515792707295}
   serializedVersion: 2
   m_LocalRotation: {x: 0.000000021855694, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: -16, y: 10, z: 0}
+  m_LocalPosition: {x: -6.1, y: 10, z: -16.4}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1019,6 +1019,14 @@ PrefabInstance:
     - target: {fileID: 5002593541015198102, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5145084552387185432, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5145084552387185432, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 67.5
       objectReference: {fileID: 0}
     - target: {fileID: 6101301330056472460, guid: 85e1ce8fbcff6f042a34bee9779e8146, type: 3}
       propertyPath: m_Value
@@ -1516,6 +1524,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   concreteAttached: 0
+  holdableButton: {fileID: 1295489496}
 --- !u!33 &8658184023395725016
 MeshFilter:
   m_ObjectHideFlags: 0

@@ -1,12 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
+using GameMath.UI;
 using UnityEngine;
-
 
 public class ConcreteGrab : MonoBehaviour
 {
     private GameObject concrete;
     public bool concreteAttached;
+    public HoldableButton holdableButton;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +24,9 @@ public class ConcreteGrab : MonoBehaviour
         if (collision.gameObject.name == "Concrete")
         {
             concreteAttached = true;
+            holdableButton.concreteAttached = true;
+            StartCoroutine(holdableButton.LiftConcrete1());
+            holdableButton.cableMoving = true;
             print("ConcreteGrab concrete hit");
         }
     }

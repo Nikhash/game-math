@@ -13,6 +13,6 @@ public class Grabber : MonoBehaviour
     void OnMouseDown()
     {
         holdableButton.GrabConcrete();
-        //print("Clicked concrete");
+        print("Calling GrabConcrete");
     }
 }
